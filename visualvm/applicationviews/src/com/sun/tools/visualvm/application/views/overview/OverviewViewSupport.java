@@ -44,6 +44,7 @@ import com.sun.tools.visualvm.core.ui.components.NotSupportedDisplayer;
 import com.sun.tools.visualvm.core.ui.components.ScrollableContainer;
 import com.sun.tools.visualvm.uisupport.HTMLTextArea;
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
@@ -53,11 +54,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import java.util.logging.Level;
+
+import javax.swing.*;
+
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -71,6 +75,9 @@ class OverviewViewSupport {
     // --- General data --------------------------------------------------------
     
     static class MasterViewSupport extends JPanel  {
+
+        private JButton reconnectButton;
+
         private PropertyChangeListener oomeListener;
         
         public MasterViewSupport(ApplicationOverviewModel model) {
@@ -106,6 +113,28 @@ class OverviewViewSupport {
                 jvm.addPropertyChangeListener(WeakListeners.propertyChange(oomeListener,jvm));
             }
             add(area, BorderLayout.CENTER);
+
+            reconnectButton = new JButton("Reconnect") {    // NOI18N
+                public void actionPerformed(ActionEvent e) {
+                    new RequestProcessor("GC Processor").post(new Runnable() { // NOI18N
+                        public void run() {
+
+                        };
+                    });
+                }
+            };
+
+            JPanel buttonsArea = new JPanel(new BorderLayout());
+            buttonsArea.setOpaque(false);
+            JPanel buttonsContainer = new JPanel(new BorderLayout(3, 0));
+            buttonsContainer.setBackground(area.getBackground());
+            buttonsContainer.setBorder(BorderFactory.createEmptyBorder(14, 8, 14, 8));
+            buttonsContainer.add(reconnectButton, BorderLayout.WEST);
+            buttonsArea.add(buttonsContainer, BorderLayout.NORTH);
+
+            add(buttonsArea, BorderLayout.AFTER_LINE_ENDS);
+
+
         }
         
         private String getGeneralProperties(ApplicationOverviewModel model) {
